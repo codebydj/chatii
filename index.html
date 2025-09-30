@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>chatii - A Mini Social App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap"
+      rel="stylesheet" />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f0f4f8;
+      }
+      .message-box {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 24px;
+        border-radius: 999px;
+        background-color: #4a90e2;
+        color: white;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+      }
+      .message-box.show {
+        opacity: 1;
+      }
+      /* Default avatar style */
+      .avatar {
+        background-color: #cbd5e1; /* cool-gray-300 */
+      }
+      @media (max-width: 480px) {
+        .post-actions-container {
+          flex-wrap: wrap;
+          gap: 0.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div
+      id="app"
+      class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[600px]">
+      <!-- Header -->
+      <header
+        id="main-header"
+        class="bg-indigo-600 text-white p-6 md:p-8 flex flex-wrap items-center justify-between gap-4 transition-opacity duration-300">
+        <h1 class="text-3xl font-bold tracking-tight">chatii</h1>
+        <!-- Update the user-info-section in the header -->
+        <div
+          id="user-info-section"
+          class="flex items-center space-x-2 sm:space-x-4 hidden">
+          <div class="flex items-center space-x-2">
+            <span class="text-lg text-indigo-200">User:</span>
+            <span id="user-display" class="text-lg text-indigo-100"></span>
+          </div>
+          <!-- Update the logout button style -->
+          <button
+            id="logout-button"
+            class="text-black bg-white px-4 py-2 rounded-lg hover:text-indigo-600 transition-colors duration-200">
+            Logout
+          </button>
+        </div>
+      </header>
+
+      <!-- Login & Registration -->
+      <div
+        id="auth-sections"
+        class="flex-grow flex flex-col items-center justify-center p-6 md:p-8 space-y-6">
+        <!-- Login -->
+        <section id="login-section">
+          <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">
+            Welcome Back!
+          </h2>
+          <form id="login-form" class="w-full max-w-xs space-y-4">
+            <!-- Update the login input label and placeholder -->
+            <div class="mb-4">
+              <label
+                for="login-username-input"
+                class="block text-sm font-medium text-gray-700 mb-1">
+                Username or Email
+              </label>
+              <input
+                type="text"
+                id="login-username-input"
+                class="w-full p-2 border rounded-lg"
+                placeholder="Enter username or email"
+                required />
+            </div>
+            <input
+              type="password"
+              id="login-password-input"
+              placeholder="Password"
+              class="w-full p-4 text-gray-800 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200" />
+            <button
+              type="submit"
+              class="w-full bg-indigo-500 hover:bg-indigo-700 transition-colors duration-200 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95">
+              Login
+            </button>
+          </form>
+          <p class="text-sm text-gray-500 text-center mt-4">
+            Don’t have an account?
+            <a
+              href="#"
+              id="show-register"
+              class="text-indigo-600 hover:underline"
+              >Register here</a
+            >
+          </p>
+        </section>
+
+        <!-- Register -->
+        <section id="register-section" class="hidden">
+          <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">
+            Join chatii!
+          </h2>
+          <form id="register-form" class="w-full max-w-xs space-y-4">
+            <input
+              type="text"
+              id="register-username-input"
+              placeholder="Choose a Username"
+              class="w-full p-4 text-gray-800 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200" />
+            <input
+              type="email"
+              id="register-email-input"
+              placeholder="Your Email"
+              class="w-full p-4 text-gray-800 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200" />
+            <input
+              type="password"
+              id="register-password-input"
+              placeholder="Create a Password"
+              class="w-full p-4 text-gray-800 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200" />
+            <button
+              type="submit"
+              class="w-full bg-indigo-500 hover:bg-indigo-700 transition-colors duration-200 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95">
+              Register
+            </button>
+          </form>
+          <p class="text-sm text-gray-500 text-center mt-4">
+            Already have an account?
+            <a href="#" id="show-login" class="text-indigo-600 hover:underline"
+              >Login here</a
+            >
+          </p>
+        </section>
+      </div>
+
+      <!-- Main App -->
+      <div id="main-app-content" class="flex-grow hidden flex flex-col">
+        <!-- Post Creation -->
+        <section class="p-6 md:p-8 border-b border-gray-200">
+          <form id="post-form" class="flex flex-col space-y-4">
+            <textarea
+              id="post-content"
+              class="w-full p-4 text-gray-800 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200"
+              placeholder="What's on your mind?"
+              maxlength="280"
+              rows="3"></textarea>
+            <div class="flex justify-between items-center">
+              <span id="char-count" class="text-sm text-gray-500">0 / 280</span>
+              <button
+                type="submit"
+                class="bg-indigo-600 text-white px-6 py-2 rounded-xl hover:bg-indigo-700 transition-colors duration-200">
+                Post
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Posts Feed -->
+        <section
+          id="posts-container"
+          class="flex-grow p-6 md:p-8 space-y-6 overflow-y-auto">
+          <!-- Posts will be dynamically inserted here -->
+          <template id="post-template">
+            <article class="bg-white p-5 rounded-2xl shadow-md mb-4">
+              <div class="flex justify-between items-start">
+                <div class="flex items-center space-x-3">
+                  <div
+                    class="avatar w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl"></div>
+                  <div>
+                    <h3 class="font-bold text-gray-900 post-username"></h3>
+                    <p class="text-sm text-gray-500 post-timestamp"></p>
+                  </div>
+                </div>
+                <div class="post-actions hidden">
+                  <button
+                    class="edit-post-btn text-blue-600 hover:text-blue-800 mr-2">
+                    Edit
+                  </button>
+                  <button
+                    class="delete-post-btn text-red-600 hover:text-red-800">
+                    Delete
+                  </button>
+                </div>
+              </div>
+
+              <p class="post-content text-gray-800"></p>
+
+              <div
+                class="post-actions-container"
+                class="flex items-center space-x-4 pt-2 border-t border-gray-100">
+                <button
+                  class="like-button flex items-center space-x-2 text-gray-500 hover:text-blue-600">
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path>
+                  </svg>
+                  <span class="like-count">0</span>
+                </button>
+
+                <button
+                  class="comment-button flex items-center space-x-2 text-gray-500 hover:text-blue-600">
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                  </svg>
+                  <span class="comment-count">0</span>
+                </button>
+              </div>
+
+              <!-- Comments Section -->
+              <div class="comments-section mt-4 border-t pt-4 hidden">
+                <form class="comment-form flex space-x-2 mb-4">
+                  <input
+                    type="text"
+                    class="comment-input flex-1 p-2 border rounded-lg"
+                    placeholder="Write a comment..." />
+                  <button
+                    type="submit"
+                    class="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600">
+                    Send
+                  </button>
+                </form>
+                <div class="comments-container space-y-2">
+                  <!-- Comments will be inserted here -->
+                </div>
+              </div>
+            </article>
+          </template>
+        </section>
+      </div>
+    </div>
+
+    <!-- Message Box -->
+    <div id="message-box" class="message-box"></div>
+    <div
+      id="loading-overlay"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+      <div class="bg-white p-4 rounded-lg flex items-center space-x-3">
+        <div
+          class="animate-spin rounded-full h-6 w-6 border-4 border-indigo-500 border-t-transparent"></div>
+        <span id="loading-text" class="text-gray-700 font-medium"
+          >Loading...</span
+        >
+      </div>
+    </div>
+
+    <script type="module" src="index.js"></script>
+  </body>
+</html>
